@@ -1,1 +1,5 @@
-{ "last_accession": "" }
+{
+  "last_seen_accession": "",
+  "last_analyzed_accession": "",
+  "ignored_accessions": []
+}
