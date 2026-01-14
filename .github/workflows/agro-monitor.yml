@@ -1,0 +1,64 @@
+name: AGRO Related-Party Monitor (DeepSeek)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "5 0 * * 1"
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run monitor
+        env:
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_MODEL: ${{ secrets.DEEPSEEK_MODEL }}
+        run: |
+          python scripts/run_monitor.py \
+            --cik 1499505 \
+            --forms 6-K 6-K/A 20-F \
+            --state data/state.json \
+            --out reports
+
+      - name: Commit reports & state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports data/state.json
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Update AGRO monitor report"
+            git push
+          fi
+
+      - name: Send email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: ${{ secrets.MAIL_PORT }}
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: AGRO 关联交易监控更新（最新披露）
+          to: ${{ secrets.MAIL_TO }}
+          from: ${{ secrets.MAIL_FROM }}
+          html_body: file://reports/email.md
+          convert_markdown: true
+          content_type: text/html
+          attachments: reports/latest_report.md
