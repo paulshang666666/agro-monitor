@@ -6,19 +6,26 @@ from evidence import build_evidence_pack
 from deepseek_client import call_deepseek
 from render import render_report, render_email
 
-SYSTEM_PROMPT = """你是一名审计/合规风控分析师。请严格输出 json（json object），只输出 JSON，不要输出任何额外文字、markdown 或代码块。
+SYSTEM_PROMPT = """你是一名审计/合规风控分析师。请只输出 json（json object），不得输出任何额外文字、markdown 或代码块。
 
-必须输出如下 JSON 结构：
+必须输出如下 JSON 结构（示例）：
 {
   "items": {
     "Q1": {"answer": "是|否|不披露", "red_flag": true, "evidence": "来自证据摘录"},
     "Q2": {"answer": "是|否|不披露", "red_flag": false, "evidence": "..."},
+    "Q3": {"answer": "是|否|不披露", "red_flag": false, "evidence": "..."},
+    "Q4": {"answer": "是（异常且解释不足）|否（无异常或解释充分）|不披露", "red_flag": false, "evidence": "..."},
     ...
     "Q10": {"answer": "是|否|不披露", "red_flag": false, "evidence": "..."}
   },
   "score": 0,
   "light": "绿灯|黄灯|红灯"
 }
+
+规则：
+- evidence 必须引用证据摘录内容，或说明证据不足；不得编造
+- score=红旗题数；light: 0–1绿，2–3黄，≥4红
+"""
 
 规则：
 - evidence 必须引用证据摘录或说明“证据不足”，不得编造
