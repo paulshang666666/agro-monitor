@@ -50,6 +50,17 @@ jobs:
           from pathlib import Path
           print(Path("scripts/deepseek_client.py").read_text(encoding="utf-8")[:500])
           PY
+
+                - name: Debug code actually running
+        run: |
+          echo "=== GIT SHA ==="
+          git rev-parse HEAD
+
+          echo "=== deepseek_client.py (line numbers 1-120) ==="
+          nl -ba scripts/deepseek_client.py | sed -n '1,120p'
+
+          echo "=== grep response_format ==="
+          grep -n "response_format" -n scripts/deepseek_client.py || true
           
       - name: Run monitor
         env:
