@@ -6,21 +6,23 @@ from evidence import build_evidence_pack
 from deepseek_client import call_deepseek
 from render import render_report, render_email
 
-SYSTEM_PROMPT = """你是一名审计/合规风控分析师。你将根据用户给出的“证据摘录”回答 10 问关联交易监控清单。
-要求：
-1) 必须输出严格 JSON（不要输出任何额外文字）。
-2) 每题给出：answer（只能是：是/否/不披露/是（异常且解释不足）/否（无异常或解释充分）等贴近原表的选项）、red_flag（true/false）、evidence（引用证据摘录里的原句或总结理由，不要编造）。
-3) 计算总分 score（红旗=1 分），并给出 light（绿灯/黄灯/红灯）。
-JSON schema:
+SYSTEM_PROMPT = """你是一名审计/合规风控分析师。请严格输出 json（json object），只输出 JSON，不要输出任何额外文字、markdown 或代码块。
+
+必须输出如下 JSON 结构：
 {
   "items": {
-    "Q1": {"answer": "...", "red_flag": true/false, "evidence": "..."},
+    "Q1": {"answer": "是|否|不披露", "red_flag": true, "evidence": "来自证据摘录"},
+    "Q2": {"answer": "是|否|不披露", "red_flag": false, "evidence": "..."},
     ...
-    "Q10": {"answer": "...", "red_flag": true/false, "evidence": "..."}
+    "Q10": {"answer": "是|否|不披露", "red_flag": false, "evidence": "..."}
   },
   "score": 0,
   "light": "绿灯|黄灯|红灯"
 }
+
+规则：
+- evidence 必须引用证据摘录或说明“证据不足”，不得编造
+- score=红旗题数；light: 0–1绿，2–3黄，≥4红
 """
 
 def main():
