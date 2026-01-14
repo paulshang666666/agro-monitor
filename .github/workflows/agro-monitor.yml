@@ -38,6 +38,19 @@ jobs:
           print("DEEPSEEK_API_KEY:", ok("DEEPSEEK_API_KEY"), "len=", len(os.getenv("DEEPSEEK_API_KEY","")))
           print("DEEPSEEK_MODEL:", os.getenv("DEEPSEEK_MODEL","(empty -> code default)"))
           PY
+
+     name: Debug deepseek_client version
+        run: |
+          echo "GIT SHA:"
+          git rev-parse HEAD
+          echo "grep response_format in scripts/deepseek_client.py"
+          grep -n "response_format" -n scripts/deepseek_client.py || true
+          echo "Head of deepseek_client.py:"
+          python - <<'PY'
+          from pathlib import Path
+          print(Path("scripts/deepseek_client.py").read_text(encoding="utf-8")[:500])
+          PY
+          
       - name: Run monitor
         env:
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
