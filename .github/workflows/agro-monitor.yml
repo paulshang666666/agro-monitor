@@ -23,6 +23,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+ - name: Preflight (check env injected)
+        env:
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_MODEL: ${{ secrets.DEEPSEEK_MODEL }}
+        run: |
+          python - <<'PY'
+          import os
+          def ok(k): 
+              v = os.getenv(k, "")
+              return "OK" if v.strip() else "MISSING"
+          print("SEC_USER_AGENT:", ok("SEC_USER_AGENT"))
+          print("DEEPSEEK_API_KEY:", ok("DEEPSEEK_API_KEY"), "len=", len(os.getenv("DEEPSEEK_API_KEY","")))
+          print("DEEPSEEK_MODEL:", os.getenv("DEEPSEEK_MODEL","(empty -> code default)"))
+          PY
       - name: Run monitor
         env:
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
